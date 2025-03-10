@@ -38,6 +38,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'rate_limiting.middleware.RateLimitMiddleware',
     'caching.middleware.CacheMiddleware',
+    'core.middlewares.RoutingMiddleware',
 ]
 
 ROOT_URLCONF = 'urls'
@@ -127,3 +128,55 @@ CACHE_SETTINGS = {
         '/api/': 60,  
     }
 }
+
+MICROSERVICES = {
+    'user-service': {
+        'endpoints': [
+            'http://user-service:8001',
+            'http://user-service-backup:8001'
+        ],
+        'load_balancing': 'round-robin',
+        'routes': [
+            {
+                'path': r'^/api/users/(.*)$',
+                'strip_prefix': True,
+                'target_path': '/users/$1',
+                'methods': ['GET', 'POST', 'PUT', 'DELETE'],
+                'auth_required': True,
+                'rate_limit': 100
+            }
+        ]
+    },
+    'product-service': {
+        'endpoints': [
+            'http://product-service:8002',
+            'http://product-service-backup:8002'
+        ],
+        'load_balancing': 'random',
+        'routes': [
+            {
+                'path': r'^/api/products/(.*)$',
+                'strip_prefix': True,
+                'target_path': '/products/$1',
+                'methods': ['GET', 'POST', 'PUT', 'DELETE'],
+                'auth_required': True
+            }
+        ]
+    },
+    'public-service': {
+        'endpoints': [
+            'http://public-service:8003'
+        ],
+        'load_balancing': 'random',
+        'routes': [
+            {
+                'path': r'^/public/(.*)$',
+                'strip_prefix': False,
+                'methods': ['GET'],
+                'auth_required': False
+            }
+        ]
+    }
+}
+
+SERVICE_REQUEST_TIMEOUT = 30
