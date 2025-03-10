@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'rate_limiting.middleware.RateLimitMiddleware',
+    'caching.middleware.CacheMiddleware',
 ]
 
 ROOT_URLCONF = 'urls'
@@ -113,4 +114,16 @@ RATE_LIMITING = {
     'DEFAULT_LIMIT': 100,  
     'ENABLED': True,
     'CACHE_PREFIX': 'ratelimit'
+}
+
+CACHE_SETTINGS = {
+    'DEFAULT_TTL': 300,  
+    'NO_CACHE_PATHS': [
+        '/admin/',
+        '/o/',  
+        '/monitoring/',  
+    ],
+    'PATH_TTLS': {
+        '/api/': 60,  
+    }
 }
